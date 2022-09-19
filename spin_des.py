@@ -9,12 +9,15 @@
 ################################################################################
 
 # from threading import Timer
-from PySide2.QtCore import QTimer, QMetaObject, QCoreApplication, QRect
-from PySide2.QtGui import QTransform, QPixmap, QMovie, QFont
+from PySide2.QtCore import QTimer, QMetaObject, QCoreApplication, QRect, QByteArray, QBuffer
+from PySide2.QtGui import QTransform, QPixmap, QMovie, QFont, QImageReader
 from PySide2.QtWidgets import QApplication, QWidget, QGridLayout, QLabel, QSizePolicy, QMainWindow, QPushButton
 import sys
+import base64
+from io import BytesIO
+from PIL import Image, ImageQt, GifImagePlugin
 import numpy as np
-
+from picstr import qq, gi, gg
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -41,8 +44,23 @@ class Ui_MainWindow(object):
         self.main_grid.setObjectName('main_grid')
         self.main_grid.setContentsMargins(0,0,0,0)
 
-        self.gif = QMovie(self.main_widget)
-        self.gif.setFileName('./resource/spinning-arrows.gif')
+        byte_data = base64.b64decode(gg)
+        # image_data = BytesIO(byte_data)
+        # image = Image.open(image_data)
+
+        # # PIL to QPixmap
+        # qImage = ImageQt.ImageQt(image)
+        a = QByteArray(byte_data)
+        self.b = QBuffer()
+        self.b.setData(byte_data)
+        # self.b.open(QIODevice.ReadOnly)
+        # m = QMovie(b, 'GIF')
+        
+        self.gif = QMovie(self.b)
+        
+        # self.gif.setDevice(QIODevice(b))
+        
+        # self.gif.setFileName('./resource/spinning-arrows.gif')
         self.label = QLabel(self.main_widget)
         self.label.setObjectName(u"label")
         self.label.setGeometry(QRect(50, 50, 430, 450))
@@ -64,8 +82,13 @@ class Ui_MainWindow(object):
 
         self.label_queen = QLabel(self.main_widget)
         
-        
-        pic=QPixmap("./resource/queen.jpg")
+        byte_data = base64.b64decode(qq)
+        image_data = BytesIO(byte_data)
+        image = Image.open(image_data)
+
+        # PIL to QPixmap
+        qImage = ImageQt.ImageQt(image)
+        pic=QPixmap.fromImage(qImage)
         self.pic_logo = pic.scaledToHeight(450)
         self.label_queen.setPixmap(self.pic_logo)
         self.label_queen.setVisible(False)
@@ -117,11 +140,14 @@ class Ui_MainWindow(object):
         self.re_button.setVisible(False)
 
     def time_count(self):
-        self.change_button.setVisible(False)
-        self.label.setVisible(True)
-        self.timer.start(1000)
-        self.gif.start()
-        self.timer_label.setText(f'00:00:{self.sec:02d}')
+        try:
+            self.change_button.setVisible(False)
+            self.label.setVisible(True)
+            self.timer.start(1000)
+            self.gif.start()
+            self.timer_label.setText(f'00:00:{self.sec:02d}')
+        except Exception as e:
+            print(str(e))
     
     def tt(self):
         self.sec -= 1
